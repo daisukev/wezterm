@@ -14,8 +14,8 @@ config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 1000 }
 config.color_scheme = appearance.scheme_for_appearance(appearance.get_appearance())
 
 wezterm.on("window-config-reloaded", function(window, pane)
-	local overrides = window:get_config_override() or {}
-	local appearance = appearance.get_appearance()
+	local overrides = window:get_config_overrides() or {}
+	-- local appearance = appearance.get_appearance()
 	local scheme = appearance.scheme_for_appearance(appearance)
 
 	if overrides.color_scheme ~= scheme then
@@ -34,7 +34,7 @@ config.font_size = 15.0
 
 -- Keep the window borders for resizing
 config.window_decorations = "RESIZE"
-config.window_background_opacity = 0.87
+config.window_background_opacity = 0.95
 config.macos_window_background_blur = 80
 
 config.window_frame = {
