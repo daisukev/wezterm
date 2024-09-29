@@ -7,11 +7,22 @@ local config = wezterm.config_builder()
 config.term = "wezterm"
 
 local appearance = require("appearance")
+
 local nvim = require("nvim-server")
 
 config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 1000 }
-
 config.color_scheme = appearance.scheme_for_appearance(appearance.get_appearance())
+
+wezterm.on("window-config-reloaded", function(window, pane)
+	local overrides = window:get_config_override() or {}
+	local appearance = appearance.get_appearance()
+	local scheme = appearance.scheme_for_appearance(appearance)
+
+	if overrides.color_scheme ~= scheme then
+		overrides.color_scheme = scheme
+		window:set_config_overrides(overrides)
+	end
+end)
 
 config.font = wezterm.font_with_fallback({
 	"Liga SFMono Nerd Font",
@@ -23,12 +34,12 @@ config.font_size = 15.0
 
 -- Keep the window borders for resizing
 config.window_decorations = "RESIZE"
-config.window_background_opacity = 0.97
-config.macos_window_background_blur = 50
+config.window_background_opacity = 0.87
+config.macos_window_background_blur = 80
 
 config.window_frame = {
 	font_size = 16.0,
-	-- active_titlebar_bg = color_scheme.background,
+	active_titlebar_bg = "#111",
 }
 
 -- config.use_fancy_tab_bar = false
@@ -58,19 +69,6 @@ wezterm.on("update-status", function(window)
 	}))
 end)
 -- Tab Bar config
---
-
--- -- Function to send a message to all running nvim processes
--- local function send_message_to_nvim(message)
--- 	-- Command to send the message to all running nvim processes
--- 	local command = string.format("pgrep -f nvim | xargs -I {} nvim --remote-send '%s'", message)
--- 	os.execute(command)
--- end
---
--- -- Example usage: sending a message when a key is pressed
--- wezterm.on("send-message-to-nvim", function(window, pane)
--- 	send_message_to_nvim(":colorscheme blue<CR>") -- Adjust the message as needed
--- end)
 --
 
 local function move_pane(key, direction)
@@ -119,8 +117,9 @@ config.keys = {
 				-- TERM = "screen-256color",
 			},
 			args = {
-				-- "/usr/local/bin/nvim",
+				-- tostring(nvim.run_command("command -v nvim")[1]) or 			-- "/usr/local/bin/nvim",
 				"/opt/homebrew/bin/nvim",
+				-- nvim.run_command("command -v nvim")
 				os.getenv("WEZTERM_CONFIG_FILE"),
 			},
 		}),
@@ -183,19 +182,12 @@ config.keys = {
 			timeout_milliseconds = 1000,
 		}),
 	},
-	{
-		key = "d",
-		mods = "LEADER",
-		action = wezterm.action_callback(function(window, pane)
-			-- nvim.exec("SELECT * FROM SERVERS", window)
-			-- nvim.get_servers()
-			nvim.nvim_exec(":colorscheme blue <CR>", window)
-			-- window:perform_action(wezterm.action.SendString("echo 'Alert: Something happened!'\n"), pane)
-			-- window:toast_notification("wezterm", "configuration reloaded!", nil, 4000)
-			-- window:set_left_status("")
-		end),
-	},
 }
+
+-- load nvim keybinds
+for _, keybind in ipairs(nvim.keys) do
+	table.insert(config.keys, keybind)
+end
 
 config.key_tables = {
 	resize_panes = {
