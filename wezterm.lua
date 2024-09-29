@@ -1,9 +1,13 @@
 local wezterm = require("wezterm")
+
 local act = wezterm.action
 
 local config = wezterm.config_builder()
 
+config.term = "wezterm"
+
 local appearance = require("appearance")
+local nvim = require("nvim-server")
 
 config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 1000 }
 
@@ -19,8 +23,13 @@ config.font_size = 15.0
 
 -- Keep the window borders for resizing
 config.window_decorations = "RESIZE"
-config.window_background_opacity = 0.9
-config.macos_window_background_blur = 30
+config.window_background_opacity = 0.97
+config.macos_window_background_blur = 50
+
+config.window_frame = {
+	font_size = 16.0,
+	-- active_titlebar_bg = color_scheme.background,
+}
 
 -- config.use_fancy_tab_bar = false
 -- config.hide_tab_bar_if_only_one_tab = true
@@ -104,10 +113,10 @@ config.keys = {
 	{
 		key = ",",
 		mods = "CMD",
-		action = act.SpawnCommandInNewTab({
+		action = act.SpawnCommandInNewWindow({
 			cwd = os.getenv("WEZTERM_CONFIG_DIR"),
 			set_environment_variables = {
-				TERM = "screen-256color",
+				-- TERM = "screen-256color",
 			},
 			args = {
 				-- "/usr/local/bin/nvim",
@@ -173,6 +182,18 @@ config.keys = {
 			-- Deactivate the keytable after a timeout.
 			timeout_milliseconds = 1000,
 		}),
+	},
+	{
+		key = "d",
+		mods = "LEADER",
+		action = wezterm.action_callback(function(window, pane)
+			-- nvim.exec("SELECT * FROM SERVERS", window)
+			-- nvim.get_servers()
+			nvim.nvim_exec(":colorscheme blue <CR>", window)
+			-- window:perform_action(wezterm.action.SendString("echo 'Alert: Something happened!'\n"), pane)
+			-- window:toast_notification("wezterm", "configuration reloaded!", nil, 4000)
+			-- window:set_left_status("")
+		end),
 	},
 }
 
